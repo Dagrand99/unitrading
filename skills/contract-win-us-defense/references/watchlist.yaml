@@ -1,0 +1,25 @@
+companies:
+  - ticker: CACI
+    name: CACI International
+    exchange: NYSE
+    aliases:
+      - "CACI International Inc"
+      - "CACI Inc"
+      - "CACI Federal"
+      - "CACI-ISS"
+      - "CACI, Inc."
+      - "CACI"
+
+  - ticker: BAH
+    name: Booz Allen Hamilton
+    exchange: NYSE
+    aliases:
+      - "Booz Allen Hamilton Holding Corporation"
+      - "Booz Allen Hamilton Inc"
+      - "Booz Allen Hamilton"
+      - "Booz Allen"
+
+alert_thresholds:
+  unreacted_ratio: 0.5
+  min_contract_value_usd: 7500000
+  min_abs_predicted_pct: 1.0
