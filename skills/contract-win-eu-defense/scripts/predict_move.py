@@ -1,0 +1,127 @@
+"""
+Predict the expected next-trading-day stock price move for an EU defense
+contract win, using OpenRouter (LLM) with company context from FMP.
+"""
+from __future__ import annotations
+
+import json
+import os
+from typing import Any
+
+import requests
+
+FMP_BASE = "https://financialmodelingprep.com/api/v3"
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+DEFAULT_MODEL = "anthropic/claude-sonnet-4.5"
+TIMEOUT = 60
+
+
+def _fmp_get(path: str, params: dict[str, Any] | None = None) -> Any:
+    key = os.environ["FMP_API_KEY"]
+    params = {**(params or {}), "apikey": key}
+    r = requests.get(f"{FMP_BASE}/{path}", params=params, timeout=30)
+    r.raise_for_status()
+    return r.json()
+
+
+def get_company_context(ticker: str) -> dict[str, Any]:
+    profile = _fmp_get(f"profile/{ticker}")
+    income = _fmp_get(f"income-statement/{ticker}", {"limit": 1})
+    p = profile[0] if profile else {}
+    i = income[0] if income else {}
+    return {
+        "ticker": ticker,
+        "name": p.get("companyName"),
+        "market_cap": p.get("mktCap"),
+        "ttm_revenue": i.get("revenue"),
+        "industry": p.get("industry"),
+        "country": p.get("country"),
+        "exchange": p.get("exchangeShortName"),
+        "beta": p.get("beta"),
+        "description": (p.get("description") or "")[:400],
+    }
+
+
+PROMPT_TEMPLATE = """You are a European-equity sell-side analyst covering listed defense and government-IT contractors (Hensoldt, Indra, Sopra Steria, Saab, Leonardo, plus peers Rheinmetall, BAE, Dassault, Thales). A new contract award was just published on TED (Tenders Electronic Daily, the EU public-procurement journal). Estimate the expected NEXT-TRADING-DAY stock price move (% change in close vs prior close) on the home exchange.
+
+CONTRACT NOTICE (from TED):
+\"\"\"
+{notice_text}
+\"\"\"
+
+CONTRACT VALUE (native): {value_native} {currency}
+CONTRACT VALUE (~USD): {value_usd}
+
+COMPANY CONTEXT:
+- Ticker: {ticker} (exchange: {exchange})
+- Name: {name}
+- Country: {country}
+- Market cap (USD): {market_cap}
+- TTM revenue: {ttm_revenue} (reporting currency)
+- Industry: {industry}
+- Beta: {beta}
+
+EVALUATION GUIDANCE:
+- Materiality = contract_value / TTM revenue. <2% typically immaterial. 2–10% noticeable. >10% material.
+- TED notices come AFTER the award decision and often AFTER a press release — much of the news may already be priced in.
+- Single-country MoD recompetes (e.g. Italian MoD → Leonardo) typically move stocks 0–1%.
+- Cross-border wins or NATO/foreign-MoD wins typically move stocks more.
+- Framework agreements / IDIQ-style ceilings move stocks less than definite-quantity awards.
+- Sovereignty-linked or symbolic wins (e.g. national champion winning a strategic system abroad) can move 2–5%.
+
+Return STRICT JSON with these keys only — no commentary outside the JSON:
+{{
+  "predicted_pct": <float, signed>,
+  "confidence": "low" | "medium" | "high",
+  "materiality": "low" | "medium" | "high",
+  "rationale": "<one or two sentences>"
+}}"""
+
+
+def predict_price_move(
+    notice_text: str,
+    contract_value_native: float | None,
+    contract_currency: str | None,
+    contract_value_usd: int | None,
+    company_context: dict[str, Any],
+    model: str | None = None,
+) -> dict[str, Any]:
+    api_key = os.environ["OPENROUTER_API_KEY"]
+    model = model or os.environ.get("OPENROUTER_MODEL", DEFAULT_MODEL)
+
+    prompt = PROMPT_TEMPLATE.format(
+        notice_text=notice_text,
+        value_native=f"{contract_value_native:,.0f}" if contract_value_native else "undisclosed",
+        currency=contract_currency or "N/A",
+        value_usd=f"${contract_value_usd:,}" if contract_value_usd else "unknown",
+        ticker=company_context.get("ticker"),
+        exchange=company_context.get("exchange") or "unknown",
+        name=company_context.get("name"),
+        country=company_context.get("country") or "unknown",
+        market_cap=f"${company_context['market_cap']:,}" if company_context.get("market_cap") else "unknown",
+        ttm_revenue=f"{company_context['ttm_revenue']:,}" if company_context.get("ttm_revenue") else "unknown",
+        industry=company_context.get("industry") or "unknown",
+        beta=company_context.get("beta") or "unknown",
+    )
+
+    r = requests.post(
+        OPENROUTER_URL,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/Dagrand99/unitrading",
+            "X-Title": "contract-win-eu-defense",
+        },
+        json={
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"},
+            "temperature": 0.2,
+        },
+        timeout=TIMEOUT,
+    )
+    r.raise_for_status()
+    content = r.json()["choices"][0]["message"]["content"]
+    parsed = json.loads(content)
+    parsed["model"] = model
+    return parsed

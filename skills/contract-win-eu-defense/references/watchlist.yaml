@@ -1,0 +1,77 @@
+companies:
+  - ticker: HAG.DE
+    name: Hensoldt
+    exchange: Xetra
+    country: DE
+    winner_names:
+      - "Hensoldt AG"
+      - "HENSOLDT AG"
+      - "Hensoldt Sensors GmbH"
+      - "Hensoldt Optronics GmbH"
+      - "Hensoldt Optronics"
+      - "HENSOLDT Sensors GmbH"
+
+  - ticker: IDR.MC
+    name: Indra Sistemas
+    exchange: BME (Madrid)
+    country: ES
+    winner_names:
+      - "Indra Sistemas, S.A."
+      - "Indra Sistemas S.A."
+      - "Indra Sistemas SA"
+      - "INDRA SISTEMAS, S.A."
+      - "Indra Sistemas"
+
+  - ticker: SOP.PA
+    name: Sopra Steria
+    exchange: Euronext Paris
+    country: FR
+    winner_names:
+      - "Sopra Steria Group"
+      - "Sopra Steria Group SA"
+      - "SOPRA STERIA GROUP"
+      - "Sopra Steria"
+      - "Sopra Steria SA"
+      - "SOPRA STERIA"
+
+  - ticker: SAAB-B.ST
+    name: Saab AB
+    exchange: Nasdaq Stockholm
+    country: SE
+    winner_names:
+      - "Saab AB"
+      - "SAAB AB"
+      - "SAAB Aktiebolag"
+      - "Saab Aktiebolag"
+      - "Saab AB Surveillance/ZAR"
+      - "Saab AB Surveillance"
+      - "Saab Dynamics AB"
+      - "Saab Kockums AB"
+
+  - ticker: LDO.MI
+    name: Leonardo
+    exchange: Borsa Italiana
+    country: IT
+    winner_names:
+      - "Leonardo S.p.A."
+      - "Leonardo S.p.A"
+      - "Leonardo SpA"
+      - "LEONARDO S.p.A."
+      - "Leonardo Spa"
+      - "Leonardo - Società per azioni"
+
+alert_thresholds:
+  unreacted_ratio: 0.5
+  min_contract_value_usd: 5000000
+  min_abs_predicted_pct: 1.0
+
+fx_to_usd:
+  EUR: 1.08
+  GBP: 1.27
+  SEK: 0.095
+  NOK: 0.092
+  DKK: 0.145
+  PLN: 0.25
+  CZK: 0.044
+  CHF: 1.12
+  USD: 1.0
