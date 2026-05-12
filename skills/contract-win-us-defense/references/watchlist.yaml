@@ -9,6 +9,7 @@ companies:
       - "CACI-ISS"
       - "CACI, Inc."
       - "CACI"
+    usaspending_search_term: "CACI"
 
   - ticker: BAH
     name: Booz Allen Hamilton
@@ -18,6 +19,7 @@ companies:
       - "Booz Allen Hamilton Inc"
       - "Booz Allen Hamilton"
       - "Booz Allen"
+    usaspending_search_term: "Booz Allen"
 
 alert_thresholds:
   unreacted_ratio: 0.5

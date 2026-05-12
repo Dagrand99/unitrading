@@ -18,6 +18,7 @@ SKILL_ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
 from fetch_dod_contracts import fetch_latest_dod_page, find_company_mentions  # noqa: E402
+from fetch_usaspending import fetch_recent_awards as fetch_usaspending_awards  # noqa: E402
 from predict_move import get_company_context, predict_price_move  # noqa: E402
 from check_reaction import get_baseline_and_current_price, evaluate_reaction  # noqa: E402
 from send_email import send_alert  # noqa: E402
@@ -43,26 +44,39 @@ def main() -> int:
     unreacted_ratio = float(thresholds.get("unreacted_ratio", 0.5))
     min_abs_pct = float(thresholds.get("min_abs_predicted_pct", 1.0))
 
+    source_label = "DoD"
+    announcement_date = ""
+    source_url = ""
+    hits: list = []
+
     print("[1/4] Fetching latest DoD contracts page...", flush=True)
     try:
         article = fetch_latest_dod_page()
-    except Exception as e:
-        print(f"FATAL: failed to fetch DoD page: {e}", file=sys.stderr)
-        return 2
-    announcement_date = article.announcement_date
-    text = article.text
-    source_url = article.article_url
-    print(f"      date={announcement_date} chars={len(text)} url={source_url}", flush=True)
+        announcement_date = article.announcement_date
+        source_url = article.article_url
+        print(f"      date={announcement_date} chars={len(article.text)} url={source_url}", flush=True)
 
-    print("[2/4] Filtering for watchlist matches...", flush=True)
-    hits = find_company_mentions(text, watchlist, announcement_date, source_url)
-    print(f"      {len(hits)} match(es)", flush=True)
+        print("[2/4] Filtering for watchlist matches (DoD)...", flush=True)
+        hits = find_company_mentions(article.text, watchlist, announcement_date, source_url)
+        print(f"      {len(hits)} match(es) from DoD", flush=True)
+    except Exception as e:
+        print(f"WARN: DoD fetch failed ({e}); falling back to USASpending.", file=sys.stderr, flush=True)
+        source_label = "USASpending"
+        try:
+            hits, source_label = fetch_usaspending_awards(watchlist, days_back=2)
+            announcement_date = hits[0].announcement_date if hits else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            source_url = hits[0].source_url if hits else "https://www.usaspending.gov/"
+            print(f"      {len(hits)} match(es) from {source_label}", flush=True)
+        except Exception as e2:
+            print(f"FATAL: USASpending fallback also failed: {e2}", file=sys.stderr)
+            return 2
 
     if not hits:
         log_record({
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "announcement_date": announcement_date,
             "source_url": source_url,
+            "source": source_label,
             "decision": "no_hits",
         })
         print("Done — no watchlist matches.", flush=True)
@@ -70,14 +84,15 @@ def main() -> int:
 
     alerts_sent = 0
     for hit in hits:
-        print(f"\n[3/4] {hit.ticker} — {hit.company_name}", flush=True)
+        print(f"\n[3/4] {hit.ticker} — {hit.company_name} (source: {source_label})", flush=True)
         print(f"      contract_value=${hit.contract_value_usd:,}", flush=True)
         print(f"      paragraph (first 200): {hit.paragraph[:200]!r}", flush=True)
 
         record: dict = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "announcement_date": announcement_date,
-            "source_url": source_url,
+            "source_url": hit.source_url,
+            "source": source_label,
             "ticker": hit.ticker,
             "company_name": hit.company_name,
             "matched_alias": hit.matched_alias,

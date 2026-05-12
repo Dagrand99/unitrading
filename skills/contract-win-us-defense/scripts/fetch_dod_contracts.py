@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+import time
+
 from bs4 import BeautifulSoup
 from curl_cffi import requests as cffi_requests
 
@@ -18,8 +20,10 @@ RSS_URL = (
     "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx"
     "?ContentType=400&Site=945&max=10"
 )
-IMPERSONATE = "chrome124"
+IMPERSONATE_PROFILES = ("chrome124", "chrome131", "safari17_0", "firefox133")
+WARMUP_URLS = ("https://www.war.gov/", "https://www.defense.gov/")
 TIMEOUT = 30
+RETRY_BACKOFF_S = 2
 
 
 @dataclass
@@ -40,10 +44,37 @@ class FetchedArticle:
     article_url: str
 
 
+def _new_session(profile: str) -> "cffi_requests.Session":
+    s = cffi_requests.Session()
+    s.impersonate = profile
+    # Warm up: cloud-IP requests look more legit after a homepage hit (cookies set).
+    for warm in WARMUP_URLS:
+        try:
+            s.get(warm, impersonate=profile, timeout=TIMEOUT)
+        except Exception:
+            pass
+    return s
+
+
 def _http_get(url: str) -> str:
-    r = cffi_requests.get(url, impersonate=IMPERSONATE, timeout=TIMEOUT)
-    r.raise_for_status()
-    return r.text
+    """GET with TLS impersonation. Tries multiple browser profiles in fallback
+    order; warms session cookies before the request. Raises after all profiles fail."""
+    last_status = None
+    last_err: Exception | None = None
+    for profile in IMPERSONATE_PROFILES:
+        try:
+            session = _new_session(profile)
+            r = session.get(url, impersonate=profile, timeout=TIMEOUT)
+            if r.status_code == 200:
+                return r.text
+            last_status = r.status_code
+            time.sleep(RETRY_BACKOFF_S)
+        except Exception as e:
+            last_err = e
+            time.sleep(RETRY_BACKOFF_S)
+    if last_err is not None:
+        raise last_err
+    raise RuntimeError(f"All impersonation profiles failed; last status {last_status} for {url}")
 
 
 def _list_rss_articles() -> list[dict[str, str]]:
