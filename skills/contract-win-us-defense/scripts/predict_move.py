@@ -6,14 +6,24 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from typing import Any
 
 import requests
 
 FMP_BASE = "https://financialmodelingprep.com/api/v3"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = "anthropic/claude-sonnet-4.5"
+# OpenRouter's Anthropic 4.x IDs use hyphens, not periods. Try newer first,
+# then fall back to long-stable 3.5.
+DEFAULT_MODEL_CHAIN = (
+    "anthropic/claude-sonnet-4",
+    "anthropic/claude-3.5-sonnet",
+)
 TIMEOUT = 60
+SYSTEM_PROMPT = (
+    "You are a sell-side equity analyst. Respond ONLY with a single JSON "
+    "object matching the requested schema. No prose, no markdown code fence."
+)
 
 
 def _fmp_get(path: str, params: dict[str, Any] | None = None) -> Any:
@@ -74,6 +84,63 @@ Return STRICT JSON with these keys only — no commentary outside the JSON:
 }}"""
 
 
+def _parse_json_loose(content: str) -> dict[str, Any]:
+    """Parse JSON from a model response, tolerating markdown code fences and
+    surrounding prose."""
+    content = content.strip()
+    if content.startswith("```"):
+        content = re.sub(r"^```(?:json)?\s*\n?", "", content)
+        content = re.sub(r"\n?```\s*$", "", content)
+        content = content.strip()
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", content, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+        raise
+
+
+def _call_openrouter(model: str, prompt: str, api_key: str, title: str) -> dict[str, Any]:
+    r = requests.post(
+        OPENROUTER_URL,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/Dagrand99/unitrading",
+            "X-Title": title,
+        },
+        json={
+            "model": model,
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.2,
+        },
+        timeout=TIMEOUT,
+    )
+    r.raise_for_status()
+    payload = r.json()
+    if isinstance(payload, dict) and "error" in payload:
+        raise ValueError(f"OpenRouter error for model {model}: {payload['error']}")
+    choices = payload.get("choices") or []
+    if not choices:
+        raise ValueError(
+            f"OpenRouter returned no choices for model {model}. "
+            f"Payload keys: {list(payload.keys())}. Body snippet: {json.dumps(payload)[:400]}"
+        )
+    message = choices[0].get("message") or {}
+    content = (message.get("content") or "").strip()
+    if not content:
+        finish = choices[0].get("finish_reason")
+        raise ValueError(
+            f"OpenRouter returned empty content for model {model} "
+            f"(finish_reason={finish}). Body snippet: {json.dumps(payload)[:400]}"
+        )
+    return _parse_json_loose(content)
+
+
 def predict_price_move(
     paragraph: str,
     contract_value_usd: int | None,
@@ -81,7 +148,13 @@ def predict_price_move(
     model: str | None = None,
 ) -> dict[str, Any]:
     api_key = os.environ["OPENROUTER_API_KEY"]
-    model = model or os.environ.get("OPENROUTER_MODEL", DEFAULT_MODEL)
+    user_override = model or os.environ.get("OPENROUTER_MODEL")
+    chain: list[str] = []
+    if user_override:
+        chain.append(user_override)
+    for m in DEFAULT_MODEL_CHAIN:
+        if m not in chain:
+            chain.append(m)
 
     prompt = PROMPT_TEMPLATE.format(
         paragraph=paragraph,
@@ -94,25 +167,14 @@ def predict_price_move(
         beta=company_context.get("beta") or "unknown",
     )
 
-    r = requests.post(
-        OPENROUTER_URL,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/unitrading/contract-win-routine",
-            "X-Title": "contract-win-us-defense",
-        },
-        json={
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "response_format": {"type": "json_object"},
-            "temperature": 0.2,
-        },
-        timeout=TIMEOUT,
-    )
-    r.raise_for_status()
-    payload = r.json()
-    content = payload["choices"][0]["message"]["content"]
-    parsed = json.loads(content)
-    parsed["model"] = model
-    return parsed
+    last_err: Exception | None = None
+    for try_model in chain:
+        try:
+            parsed = _call_openrouter(try_model, prompt, api_key, "contract-win-us-defense")
+            parsed["model"] = try_model
+            return parsed
+        except (ValueError, json.JSONDecodeError, requests.RequestException) as e:
+            print(f"  [warn] OpenRouter model {try_model} failed: {e}")
+            last_err = e
+            continue
+    raise RuntimeError(f"All OpenRouter models exhausted. Last error: {last_err}")
