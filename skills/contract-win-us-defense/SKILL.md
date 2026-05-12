@@ -24,10 +24,19 @@ Monitors the US Department of Defense daily contract announcements at `defense.g
 | `OPENROUTER_MODEL` | Model override (default: `anthropic/claude-sonnet-4.5`) |
 | `SAM_API_KEY` | Reserved for future supplemental award-data fetch (not used in v1) |
 
+## Data sources (with fallback)
+
+| Priority | Source | Latency | Auth | Notes |
+|---|---|---|---|---|
+| 1 (primary) | DoD daily wire — `war.gov/News/Contracts/` (Akamai-protected) | real-time at 17:00 ET | none | Scraped via `curl_cffi` with multi-profile TLS impersonation and session warming. Cloud datacenter IPs often hit 403; the scraper retries through chrome124 → chrome131 → safari17_0 → firefox133. |
+| 2 (fallback) | USASpending.gov REST API | ~24h lag | none | Structured JSON, no bot detection. Triggered automatically when the DoD fetcher raises. Returns the same `ContractHit` shape with a synthesized contract paragraph. |
+
+The source for each analyzed contract is tagged in `state/log.jsonl` under the `source` field (`DoD` or `USASpending`).
+
 ## Workflow
 
-1. **Fetch** — `scripts/fetch_dod_contracts.py` scrapes the latest daily article from `defense.gov/News/Contracts/`.
-2. **Filter** — match paragraphs against `references/watchlist.yaml` (name aliases + min contract value).
+1. **Fetch** — `scripts/fetch_dod_contracts.py` scrapes the latest daily article from `war.gov`. If 403/error after the impersonation fallback chain, `scripts/fetch_usaspending.py` queries USASpending per watchlist company.
+2. **Filter** — match paragraphs against `references/watchlist.yaml` (name aliases + min contract value, with word-boundary regex to drop substring noise like COMUNICACIONES → CACI).
 3. **Predict** — `scripts/predict_move.py` builds a prompt with contract text + company context (market cap, TTM revenue from FMP) → OpenRouter → JSON `{predicted_pct, confidence, rationale, materiality}`.
 4. **Measure** — `scripts/check_reaction.py` fetches baseline close (last close before announcement) and current price from FMP → actual % move.
 5. **Decide:**
