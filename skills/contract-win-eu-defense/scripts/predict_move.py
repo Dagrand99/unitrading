@@ -1,6 +1,9 @@
 """
 Predict the expected next-trading-day stock price move for an EU defense
-contract win, using OpenRouter (LLM) with company context from FMP.
+contract win, using OpenRouter (LLM) with company context from yfinance.
+
+Note: yfinance (Yahoo Finance) is used instead of FMP because FMP's free
+tier returns 403 for non-US tickers (HAG.DE, SOP.PA, etc.).
 """
 from __future__ import annotations
 
@@ -9,36 +12,30 @@ import os
 from typing import Any
 
 import requests
+import yfinance as yf
 
-FMP_BASE = "https://financialmodelingprep.com/api/v3"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "anthropic/claude-sonnet-4.5"
 TIMEOUT = 60
 
 
-def _fmp_get(path: str, params: dict[str, Any] | None = None) -> Any:
-    key = os.environ["FMP_API_KEY"]
-    params = {**(params or {}), "apikey": key}
-    r = requests.get(f"{FMP_BASE}/{path}", params=params, timeout=30)
-    r.raise_for_status()
-    return r.json()
-
-
 def get_company_context(ticker: str) -> dict[str, Any]:
-    profile = _fmp_get(f"profile/{ticker}")
-    income = _fmp_get(f"income-statement/{ticker}", {"limit": 1})
-    p = profile[0] if profile else {}
-    i = income[0] if income else {}
+    """Pull profile + financials via yfinance. Values are in the listing
+    currency (e.g. EUR for HAG.DE, SEK for SAAB-B.ST); the currency itself
+    is included so the LLM can do materiality math in-context."""
+    t = yf.Ticker(ticker)
+    info = t.info or {}
     return {
         "ticker": ticker,
-        "name": p.get("companyName"),
-        "market_cap": p.get("mktCap"),
-        "ttm_revenue": i.get("revenue"),
-        "industry": p.get("industry"),
-        "country": p.get("country"),
-        "exchange": p.get("exchangeShortName"),
-        "beta": p.get("beta"),
-        "description": (p.get("description") or "")[:400],
+        "name": info.get("longName") or info.get("shortName"),
+        "market_cap": info.get("marketCap"),
+        "ttm_revenue": info.get("totalRevenue"),
+        "industry": info.get("industry"),
+        "country": info.get("country"),
+        "exchange": info.get("exchange"),
+        "beta": info.get("beta"),
+        "currency": info.get("financialCurrency") or info.get("currency"),
+        "description": (info.get("longBusinessSummary") or "")[:400],
     }
 
 
@@ -56,8 +53,8 @@ COMPANY CONTEXT:
 - Ticker: {ticker} (exchange: {exchange})
 - Name: {name}
 - Country: {country}
-- Market cap (USD): {market_cap}
-- TTM revenue: {ttm_revenue} (reporting currency)
+- Market cap: {market_cap} {financial_currency}
+- TTM revenue: {ttm_revenue} {financial_currency}
 - Industry: {industry}
 - Beta: {beta}
 
@@ -98,8 +95,9 @@ def predict_price_move(
         exchange=company_context.get("exchange") or "unknown",
         name=company_context.get("name"),
         country=company_context.get("country") or "unknown",
-        market_cap=f"${company_context['market_cap']:,}" if company_context.get("market_cap") else "unknown",
+        market_cap=f"{company_context['market_cap']:,}" if company_context.get("market_cap") else "unknown",
         ttm_revenue=f"{company_context['ttm_revenue']:,}" if company_context.get("ttm_revenue") else "unknown",
+        financial_currency=company_context.get("currency") or "",
         industry=company_context.get("industry") or "unknown",
         beta=company_context.get("beta") or "unknown",
     )

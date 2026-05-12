@@ -1,25 +1,16 @@
 """
 Measure realized price reaction. Baseline = last close strictly BEFORE the
-announcement date. Current = latest available FMP quote.
+announcement date. Current = latest available quote.
+
+Uses yfinance (Yahoo Finance) — FMP's free tier returns 403 for EU tickers
+on Xetra / Euronext / BME / Borsa Italiana / Nasdaq Stockholm.
 """
 from __future__ import annotations
 
-import os
 from datetime import datetime
 from typing import Any
 
-import requests
-
-FMP_BASE = "https://financialmodelingprep.com/api/v3"
-TIMEOUT = 20
-
-
-def _fmp_get(path: str, params: dict[str, Any] | None = None) -> Any:
-    key = os.environ["FMP_API_KEY"]
-    params = {**(params or {}), "apikey": key}
-    r = requests.get(f"{FMP_BASE}/{path}", params=params, timeout=TIMEOUT)
-    r.raise_for_status()
-    return r.json()
+import yfinance as yf
 
 
 def get_baseline_and_current_price(ticker: str, announcement_date: str) -> dict[str, Any] | None:
@@ -28,42 +19,36 @@ def get_baseline_and_current_price(ticker: str, announcement_date: str) -> dict[
       baseline_close, baseline_date, current_price, current_timestamp, actual_pct
     or None if data is unavailable.
     """
-    hist = _fmp_get(f"historical-price-full/{ticker}", {"timeseries": 30})
-    bars = hist.get("historical", []) if isinstance(hist, dict) else []
-    if not bars:
+    t = yf.Ticker(ticker)
+    hist = t.history(period="2mo", auto_adjust=False)
+    if hist is None or hist.empty:
         return None
 
-    ann_dt = datetime.strptime(announcement_date, "%Y-%m-%d").date()
-    baseline_close = None
-    baseline_date = None
-    for bar in bars:  # newest first
-        try:
-            bar_date = datetime.strptime(bar["date"], "%Y-%m-%d").date()
-        except (KeyError, ValueError):
-            continue
-        if bar_date < ann_dt:
-            baseline_close = bar["close"]
-            baseline_date = bar["date"]
-            break
-
-    if baseline_close is None:
+    try:
+        ann_dt = datetime.strptime(announcement_date, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
         return None
 
-    quote = _fmp_get(f"quote/{ticker}")
-    if not quote:
+    pre = hist[hist.index.date < ann_dt]
+    if pre.empty:
         return None
-    current_price = quote[0].get("price")
-    current_ts = quote[0].get("timestamp")
+
+    baseline_close = float(pre["Close"].iloc[-1])
+    baseline_date = pre.index[-1].strftime("%Y-%m-%d")
+
+    info = t.info or {}
+    current_price = info.get("currentPrice") or info.get("regularMarketPrice")
     if current_price is None:
-        return None
+        current_price = float(hist["Close"].iloc[-1])
+    current_price = float(current_price)
 
     actual_pct = (current_price - baseline_close) / baseline_close * 100.0
 
     return {
-        "baseline_close": float(baseline_close),
+        "baseline_close": baseline_close,
         "baseline_date": baseline_date,
-        "current_price": float(current_price),
-        "current_timestamp": current_ts,
+        "current_price": current_price,
+        "current_timestamp": info.get("regularMarketTime"),
         "actual_pct": actual_pct,
     }
 
@@ -72,10 +57,9 @@ def evaluate_reaction(predicted_pct: float, actual_pct: float, unreacted_ratio: 
     """
     Decision rule:
       |actual| >= |predicted|     → 'priced_in'
-      |actual| <= ratio*|predicted| → 'alert'
+      |actual| <= ratio*|predicted| → 'alert' (only if signs agree)
+      |actual| <= ratio*|predicted| but signs disagree → 'contradicted'
       otherwise                   → 'partial'
-    Sign alignment is required for 'alert' — a move in the wrong direction is
-    not an unreacted opportunity, it's a contradicted prediction.
     """
     abs_p = abs(predicted_pct)
     abs_a = abs(actual_pct)
