@@ -1,0 +1,117 @@
+companies:
+  - ticker: MRNA
+    name: Moderna
+    exchange: NASDAQ
+    country: US
+    usaspending_search_term: "Moderna"
+    aliases:
+      - "Moderna, Inc."
+      - "ModernaTX, Inc."
+      - "ModernaTX"
+      - "MODERNATX"
+      - "Moderna"
+
+  - ticker: VRTX
+    name: Vertex Pharmaceuticals
+    exchange: NASDAQ
+    country: US
+    usaspending_search_term: "Vertex Pharmaceuticals"
+    aliases:
+      - "Vertex Pharmaceuticals Incorporated"
+      - "Vertex Pharmaceuticals"
+      - "VERTEX PHARMACEUTICALS"
+
+  - ticker: ARWR
+    name: Arrowhead Pharmaceuticals
+    exchange: NASDAQ
+    country: US
+    usaspending_search_term: "Arrowhead Pharmaceuticals"
+    aliases:
+      - "Arrowhead Pharmaceuticals, Inc."
+      - "Arrowhead Pharmaceuticals"
+      - "ARROWHEAD PHARMACEUTICALS"
+
+  - ticker: BNTX
+    name: BioNTech
+    exchange: NASDAQ
+    country: DE
+    usaspending_search_term: "BioNTech"
+    aliases:
+      - "BioNTech SE"
+      - "BioNTech US Inc."
+      - "BioNTech"
+      - "BIONTECH"
+
+  - ticker: BAVA.CO
+    name: Bavarian Nordic
+    exchange: Nasdaq Copenhagen
+    country: DK
+    usaspending_search_term: "Bavarian Nordic"
+    aliases:
+      - "Bavarian Nordic A/S"
+      - "Bavarian Nordic, Inc."
+      - "Bavarian Nordic"
+      - "BAVARIAN NORDIC"
+
+  - ticker: VLA.PA
+    name: Valneva
+    exchange: Euronext Paris
+    country: FR
+    usaspending_search_term: "Valneva"
+    aliases:
+      - "Valneva SE"
+      - "Valneva USA, Inc."
+      - "Valneva"
+      - "VALNEVA"
+
+  - ticker: GMAB.CO
+    name: Genmab
+    exchange: Nasdaq Copenhagen
+    country: DK
+    usaspending_search_term: "Genmab"
+    aliases:
+      - "Genmab A/S"
+      - "Genmab US, Inc."
+      - "Genmab"
+      - "GENMAB"
+
+  - ticker: EVT.DE
+    name: Evotec
+    exchange: Xetra
+    country: DE
+    usaspending_search_term: "Evotec"
+    aliases:
+      - "Evotec SE"
+      - "Evotec AG"
+      - "Evotec"
+      - "EVOTEC"
+
+  - ticker: NOVN.SW
+    name: Novartis
+    exchange: SIX Swiss
+    country: CH
+    usaspending_search_term: "Novartis"
+    aliases:
+      - "Novartis AG"
+      - "Novartis Pharmaceuticals Corporation"
+      - "Novartis Vaccines"
+      - "Novartis"
+      - "NOVARTIS"
+
+  - ticker: ZEAL.CO
+    name: Zealand Pharma
+    exchange: Nasdaq Copenhagen
+    country: DK
+    usaspending_search_term: "Zealand Pharma"
+    aliases:
+      - "Zealand Pharma A/S"
+      - "Zealand Pharma"
+      - "ZEALAND PHARMA"
+
+alert_thresholds:
+  unreacted_ratio: 0.5
+  # $5M floor: catches Valneva DLA orders (~$10-16M) and small NIH/EPA awards
+  # to Evotec; below this is mostly VA pharmacy noise. Bavarian Nordic /
+  # Moderna BARDA awards land at $100M+ so the threshold doesn't constrain them.
+  min_contract_value_usd: 5000000
+  min_abs_predicted_pct: 1.0
