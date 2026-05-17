@@ -1,0 +1,587 @@
+# Master cross-sector watchlist for contract-monitor-* skills.
+# Each company is searched on ALL four sources (SAM.gov, USASpending.gov,
+# TED EU, gov.uk) regardless of country.
+#
+# - ticker: primary listing used for price/context (yfinance symbol)
+# - aliases: case-insensitive substring/word-boundary match against the
+#   recipient/awardee/winner field. Include legal-entity forms, common abbreviations,
+#   subsidiaries that commonly appear in procurement records.
+# - search_terms: broad terms passed to APIs that support recipient search
+#   (USASpending.gov, gov.uk). SAM.gov / TED use the aliases list directly.
+
+companies:
+  # ── Automotive ────────────────────────────────────────────────
+  - ticker: BMW.DE
+    name: BMW
+    sector: Auto
+    country: DE
+    search_terms: ["BMW"]
+    aliases:
+      - "BMW"
+      - "BMW AG"
+      - "Bayerische Motoren Werke"
+      - "Bayerische Motoren Werke AG"
+      - "BMW of North America"
+      - "BMW Manufacturing"
+      - "BMW Group"
+
+  - ticker: VOW3.DE
+    name: Volkswagen
+    sector: Auto
+    country: DE
+    search_terms: ["Volkswagen"]
+    aliases:
+      - "Volkswagen"
+      - "Volkswagen AG"
+      - "Volkswagen Group of America"
+      - "Volkswagen Group"
+      - "VW Group"
+
+  - ticker: F
+    name: Ford
+    sector: Auto
+    country: US
+    search_terms: ["Ford Motor"]
+    aliases:
+      - "Ford Motor Company"
+      - "Ford Motor Co"
+      - "Ford Motor"
+      - "Ford Defense"
+      - "Ford Aerospace"
+
+  - ticker: TSLA
+    name: Tesla
+    sector: Auto
+    country: US
+    search_terms: ["Tesla"]
+    aliases:
+      - "Tesla, Inc."
+      - "Tesla Inc"
+      - "Tesla Motors"
+      - "Tesla Energy"
+      - "Tesla"
+
+  - ticker: P911.DE
+    name: Porsche
+    sector: Auto
+    country: DE
+    search_terms: ["Porsche"]
+    aliases:
+      - "Dr. Ing. h.c. F. Porsche AG"
+      - "Porsche AG"
+      - "Porsche Cars North America"
+      - "Porsche"
+
+  # ── IT ────────────────────────────────────────────────────────
+  - ticker: INTC
+    name: Intel
+    sector: IT
+    country: US
+    search_terms: ["Intel Corporation", "Intel Federal"]
+    aliases:
+      - "Intel Corporation"
+      - "Intel Corp"
+      - "Intel Federal LLC"
+      - "Intel Federal"
+      - "Intel"
+
+  - ticker: AMD
+    name: AMD
+    sector: IT
+    country: US
+    search_terms: ["Advanced Micro Devices"]
+    aliases:
+      - "Advanced Micro Devices, Inc."
+      - "Advanced Micro Devices Inc"
+      - "Advanced Micro Devices"
+      - "AMD Inc"
+      - "AMD"
+
+  - ticker: ASML
+    name: ASML
+    sector: IT
+    country: NL
+    search_terms: ["ASML"]
+    aliases:
+      - "ASML Holding N.V."
+      - "ASML Holding NV"
+      - "ASML Holding"
+      - "ASML Netherlands B.V."
+      - "ASML US"
+      - "ASML"
+
+  - ticker: IBM
+    name: IBM
+    sector: IT
+    country: US
+    search_terms: ["International Business Machines", "IBM"]
+    aliases:
+      - "International Business Machines Corporation"
+      - "International Business Machines Corp"
+      - "International Business Machines"
+      - "IBM Corporation"
+      - "IBM Corp"
+      - "IBM Italia"
+      - "IBM United Kingdom"
+      - "IBM Deutschland"
+      - "IBM"
+
+  - ticker: SNOW
+    name: Snowflake
+    sector: IT
+    country: US
+    search_terms: ["Snowflake Inc", "Snowflake Computing"]
+    aliases:
+      - "Snowflake Inc."
+      - "Snowflake Inc"
+      - "Snowflake Computing"
+      - "Snowflake Government"
+      - "Snowflake"
+
+  - ticker: QCOM
+    name: Qualcomm
+    sector: IT
+    country: US
+    search_terms: ["Qualcomm"]
+    aliases:
+      - "Qualcomm Incorporated"
+      - "Qualcomm Inc"
+      - "Qualcomm Technologies"
+      - "Qualcomm"
+
+  - ticker: BABA
+    name: Alibaba
+    sector: IT
+    country: CN
+    search_terms: ["Alibaba"]
+    aliases:
+      - "Alibaba Group"
+      - "Alibaba Cloud"
+      - "Alibaba.com"
+      - "Alibaba"
+
+  - ticker: CSCO
+    name: Cisco
+    sector: IT
+    country: US
+    search_terms: ["Cisco Systems"]
+    aliases:
+      - "Cisco Systems, Inc."
+      - "Cisco Systems Inc"
+      - "Cisco Systems"
+      - "Cisco Systems International"
+      - "Cisco"
+
+  - ticker: GOOGL
+    name: Google
+    sector: IT
+    country: US
+    search_terms: ["Google LLC", "Alphabet"]
+    aliases:
+      - "Google LLC"
+      - "Google Inc"
+      - "Alphabet Inc"
+      - "Google Cloud"
+      - "Google Public Sector"
+      - "Google Ireland"
+      - "Google"
+
+  - ticker: NVDA
+    name: Nvidia
+    sector: IT
+    country: US
+    search_terms: ["NVIDIA Corporation", "Nvidia"]
+    aliases:
+      - "NVIDIA Corporation"
+      - "NVIDIA Corp"
+      - "NVIDIA"
+      - "Nvidia"
+
+  - ticker: AMZN
+    name: Amazon
+    sector: IT
+    country: US
+    search_terms: ["Amazon Web Services", "Amazon.com"]
+    aliases:
+      - "Amazon Web Services, Inc."
+      - "Amazon Web Services Inc"
+      - "Amazon Web Services"
+      - "AWS"
+      - "Amazon.com, Inc."
+      - "Amazon.com Inc"
+      - "Amazon.com"
+      - "Amazon"
+
+  - ticker: AAPL
+    name: Apple
+    sector: IT
+    country: US
+    search_terms: ["Apple Inc"]
+    aliases:
+      - "Apple Inc."
+      - "Apple Inc"
+      - "Apple Computer"
+      - "Apple"
+
+  - ticker: META
+    name: Meta
+    sector: IT
+    country: US
+    search_terms: ["Meta Platforms", "Facebook"]
+    aliases:
+      - "Meta Platforms, Inc."
+      - "Meta Platforms Inc"
+      - "Meta Platforms"
+      - "Facebook, Inc."
+      - "Facebook Inc"
+      - "Meta"
+
+  - ticker: MSFT
+    name: Microsoft
+    sector: IT
+    country: US
+    search_terms: ["Microsoft Corporation", "Microsoft"]
+    aliases:
+      - "Microsoft Corporation"
+      - "Microsoft Corp"
+      - "Microsoft Ireland"
+      - "Microsoft Limited"
+      - "Microsoft"
+
+  # ── Defence ───────────────────────────────────────────────────
+  - ticker: CACI
+    name: CACI International
+    sector: Defence
+    country: US
+    search_terms: ["CACI"]
+    aliases:
+      - "CACI International Inc"
+      - "CACI International"
+      - "CACI, Inc.-Federal"
+      - "CACI Inc-Federal"
+      - "CACI Inc."
+      - "CACI"
+
+  - ticker: BAH
+    name: Booz Allen Hamilton
+    sector: Defence
+    country: US
+    search_terms: ["Booz Allen Hamilton"]
+    aliases:
+      - "Booz Allen Hamilton Inc."
+      - "Booz Allen Hamilton Inc"
+      - "Booz Allen Hamilton"
+      - "Booz, Allen & Hamilton"
+      - "Booz Allen"
+
+  - ticker: HAG.DE
+    name: Hensoldt
+    sector: Defence
+    country: DE
+    search_terms: ["Hensoldt"]
+    aliases:
+      - "Hensoldt AG"
+      - "HENSOLDT AG"
+      - "Hensoldt Sensors GmbH"
+      - "Hensoldt Optronics GmbH"
+      - "Hensoldt Optronics"
+      - "Hensoldt Inc"
+      - "Hensoldt"
+
+  - ticker: CVX
+    name: Chevron
+    sector: Defence
+    country: US
+    search_terms: ["Chevron"]
+    aliases:
+      - "Chevron Corporation"
+      - "Chevron Corp"
+      - "Chevron U.S.A. Inc."
+      - "Chevron USA Inc"
+      - "Chevron Products"
+      - "Chevron"
+
+  - ticker: IDR.MC
+    name: Indra Sistemas
+    sector: Defence
+    country: ES
+    search_terms: ["Indra Sistemas", "Indra"]
+    aliases:
+      - "Indra Sistemas, S.A."
+      - "Indra Sistemas S.A."
+      - "Indra Sistemas SA"
+      - "INDRA SISTEMAS"
+      - "Indra Sistemas"
+      - "Indra Sis"
+
+  - ticker: SOP.PA
+    name: Sopra Steria
+    sector: Defence
+    country: FR
+    search_terms: ["Sopra Steria"]
+    aliases:
+      - "Sopra Steria Group"
+      - "Sopra Steria Group SA"
+      - "SOPRA STERIA GROUP"
+      - "Sopra Steria"
+      - "Sopra Steria SA"
+      - "Sopra Steria Ltd"
+
+  - ticker: SAAB-B.ST
+    name: Saab AB
+    sector: Defence
+    country: SE
+    search_terms: ["Saab AB", "Saab Aktiebolag"]
+    aliases:
+      - "Saab AB"
+      - "SAAB AB"
+      - "SAAB Aktiebolag"
+      - "Saab Aktiebolag"
+      - "Saab AB Surveillance"
+      - "Saab Dynamics AB"
+      - "Saab Kockums AB"
+      - "Saab Defense and Security USA"
+      - "Saab Inc"
+
+  - ticker: LDO.MI
+    name: Leonardo
+    sector: Defence
+    country: IT
+    search_terms: ["Leonardo S.p.A.", "Leonardo SpA"]
+    aliases:
+      - "Leonardo S.p.A."
+      - "Leonardo S.p.A"
+      - "Leonardo SpA"
+      - "LEONARDO S.p.A."
+      - "Leonardo Spa"
+      - "Leonardo - Società per azioni"
+      - "Leonardo DRS"
+      - "Leonardo UK"
+
+  # ── Pharmaceuticals ───────────────────────────────────────────
+  - ticker: MRNA
+    name: Moderna
+    sector: Pharma
+    country: US
+    search_terms: ["Moderna"]
+    aliases:
+      - "Moderna, Inc."
+      - "Moderna Inc"
+      - "ModernaTX, Inc."
+      - "ModernaTX Inc"
+      - "ModernaTX"
+      - "Moderna"
+
+  - ticker: VRTX
+    name: Vertex Pharmaceuticals
+    sector: Pharma
+    country: US
+    search_terms: ["Vertex Pharmaceuticals"]
+    aliases:
+      - "Vertex Pharmaceuticals Incorporated"
+      - "Vertex Pharmaceuticals Inc"
+      - "Vertex Pharmaceuticals"
+
+  - ticker: BNTX
+    name: BioNTech
+    sector: Pharma
+    country: DE
+    search_terms: ["BioNTech"]
+    aliases:
+      - "BioNTech SE"
+      - "BioNTech US Inc."
+      - "BioNTech US Inc"
+      - "BioNTech Manufacturing"
+      - "BioNTech"
+
+  - ticker: ARWR
+    name: Arrowhead Pharmaceuticals
+    sector: Pharma
+    country: US
+    search_terms: ["Arrowhead Pharmaceuticals"]
+    aliases:
+      - "Arrowhead Pharmaceuticals, Inc."
+      - "Arrowhead Pharmaceuticals Inc"
+      - "Arrowhead Pharmaceuticals"
+
+  - ticker: BAVA.CO
+    name: Bavarian Nordic
+    sector: Pharma
+    country: DK
+    search_terms: ["Bavarian Nordic"]
+    aliases:
+      - "Bavarian Nordic A/S"
+      - "Bavarian Nordic, Inc."
+      - "Bavarian Nordic Inc"
+      - "Bavarian Nordic"
+
+  - ticker: VLA.PA
+    name: Valneva
+    sector: Pharma
+    country: FR
+    search_terms: ["Valneva"]
+    aliases:
+      - "Valneva SE"
+      - "Valneva USA, Inc."
+      - "Valneva USA Inc"
+      - "Valneva Austria"
+      - "Valneva Scotland"
+      - "Valneva"
+
+  - ticker: GMAB.CO
+    name: Genmab
+    sector: Pharma
+    country: DK
+    search_terms: ["Genmab"]
+    aliases:
+      - "Genmab A/S"
+      - "Genmab US, Inc."
+      - "Genmab US Inc"
+      - "Genmab"
+
+  - ticker: EVT.DE
+    name: Evotec
+    sector: Pharma
+    country: DE
+    search_terms: ["Evotec"]
+    aliases:
+      - "Evotec SE"
+      - "Evotec AG"
+      - "Evotec International"
+      - "Evotec"
+
+  - ticker: NOVN.SW
+    name: Novartis
+    sector: Pharma
+    country: CH
+    search_terms: ["Novartis"]
+    aliases:
+      - "Novartis AG"
+      - "Novartis Pharmaceuticals Corporation"
+      - "Novartis Pharmaceuticals"
+      - "Novartis Vaccines"
+      - "Sandoz"
+      - "Novartis"
+
+  - ticker: ZEAL.CO
+    name: Zealand Pharma
+    sector: Pharma
+    country: DK
+    search_terms: ["Zealand Pharma"]
+    aliases:
+      - "Zealand Pharma A/S"
+      - "Zealand Pharma"
+
+  # ── Energy ────────────────────────────────────────────────────
+  - ticker: NDX1.DE
+    name: Nordex
+    sector: Energy
+    country: DE
+    search_terms: ["Nordex"]
+    aliases:
+      - "Nordex SE"
+      - "Nordex Energy"
+      - "Nordex USA"
+      - "Nordex Group"
+      - "Nordex"
+
+  - ticker: VWS.CO
+    name: Vestas Wind Systems
+    sector: Energy
+    country: DK
+    search_terms: ["Vestas"]
+    aliases:
+      - "Vestas Wind Systems A/S"
+      - "Vestas Wind Systems"
+      - "Vestas-American Wind Technology"
+      - "Vestas-American"
+      - "Vestas Offshore"
+      - "Vestas"
+
+  - ticker: SCATC.OL
+    name: Scatec
+    sector: Energy
+    country: NO
+    search_terms: ["Scatec"]
+    aliases:
+      - "Scatec ASA"
+      - "Scatec Solar"
+      - "Scatec"
+
+  - ticker: NEL.OL
+    name: Nel ASA
+    sector: Energy
+    country: NO
+    search_terms: ["Nel ASA", "Nel Hydrogen"]
+    aliases:
+      - "Nel ASA"
+      - "Nel Hydrogen"
+      - "Nel Hydrogen US"
+      - "Proton OnSite"
+
+  - ticker: MCPHY.PA
+    name: McPhy Energy
+    sector: Energy
+    country: FR
+    search_terms: ["McPhy"]
+    aliases:
+      - "McPhy Energy S.A."
+      - "McPhy Energy SA"
+      - "McPhy Energy"
+      - "McPhy"
+
+  - ticker: EDP.LS
+    name: EDP
+    sector: Energy
+    country: PT
+    search_terms: ["EDP - Energias", "Energias de Portugal"]
+    aliases:
+      - "EDP - Energias de Portugal, S.A."
+      - "EDP - Energias de Portugal"
+      - "Energias de Portugal"
+      - "EDP Renewables North America"
+      - "EDP Renewables"
+      - "EDP Renováveis"
+      - "EDPR"
+
+  - ticker: EDPR.LS
+    name: EDP Renováveis
+    sector: Energy
+    country: PT
+    search_terms: ["EDP Renováveis", "EDP Renewables"]
+    aliases:
+      - "EDP Renováveis, S.A."
+      - "EDP Renováveis"
+      - "EDP Renewables, S.A."
+      - "EDP Renewables North America"
+      - "EDP Renewables"
+      - "EDPR"
+
+# ── Thresholds ─────────────────────────────────────────────────
+alert_thresholds:
+  # Email triggered when |LLM predicted_pct| > this value (percent points).
+  # 3.0 per user spec.
+  predicted_pct_alert: 3.0
+
+  # Skip very small contracts that the LLM will almost always rate sub-1% impact.
+  # Each source can override (some sources have natural reporting floors).
+  min_contract_value_usd: 1000000
+
+  # When an existing contract record is updated, re-alert only if the award amount
+  # changes by more than this fraction (so option exercises that add $100M to a
+  # known IDIQ still fire, but a 2% rounding adjustment doesn't).
+  update_material_value_delta: 0.25
+
+# Approximate FX → USD (used by TED & gov.uk routines that report local currency).
+# Annual refresh is fine; precision <1% is below alert noise floor.
+fx_to_usd:
+  EUR: 1.08
+  GBP: 1.27
+  SEK: 0.095
+  NOK: 0.092
+  DKK: 0.145
+  PLN: 0.25
+  CZK: 0.044
+  CHF: 1.12
+  CNY: 0.14
+  USD: 1.0
