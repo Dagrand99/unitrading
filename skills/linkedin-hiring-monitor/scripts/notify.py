@@ -19,10 +19,15 @@ RESEND_URL = "https://api.resend.com/emails"
 TIMEOUT = 30
 
 
+def _h(v: Any) -> str:
+    """Safely HTML-escape any value (bool/None/int → string first)."""
+    return html.escape("" if v is None else str(v))
+
+
 def _company_row_html(entry: dict[str, Any], max_titles: int = 5) -> str:
     titles = entry.get("sample_titles", [])[:max_titles]
     title_html = "".join(
-        f'<li><a href="{html.escape(t["url"])}">{html.escape(t["title"] or "(untitled)")}</a></li>'
+        f'<li><a href="{_h(t["url"])}">{_h(t["title"] or "(untitled)")}</a></li>'
         for t in titles
     )
     extra = ""
@@ -31,8 +36,8 @@ def _company_row_html(entry: dict[str, Any], max_titles: int = 5) -> str:
     return f"""
 <tr>
   <td valign="top" style="padding:8px 12px; border-bottom:1px solid #eee;">
-    <strong>{html.escape(entry['ticker'])}</strong> · {html.escape(entry['name'])}
-    <br/><span style="color:#888; font-size:12px;">{html.escape(entry['sector'])} · {html.escape(entry['country'])}</span>
+    <strong>{_h(entry['ticker'])}</strong> · {_h(entry['name'])}
+    <br/><span style="color:#888; font-size:12px;">{_h(entry['sector'])} · {_h(entry['country'])}</span>
   </td>
   <td valign="top" style="padding:8px 12px; border-bottom:1px solid #eee; text-align:right; font-family:monospace; font-size:14px;">
     <strong>{entry['total_count']}</strong><br/>
@@ -48,9 +53,9 @@ def _section(title: str, rows: list[dict[str, Any]], note: str = "") -> str:
     if not rows:
         return ""
     body = "".join(_company_row_html(r) for r in rows)
-    note_html = f'<p style="color:#666; font-size:12px; margin:4px 0 8px 0;">{html.escape(note)}</p>' if note else ""
+    note_html = f'<p style="color:#666; font-size:12px; margin:4px 0 8px 0;">{_h(note)}</p>' if note else ""
     return f"""
-<h3 style="margin:18px 0 4px 0;">{html.escape(title)}</h3>
+<h3 style="margin:18px 0 4px 0;">{_h(title)}</h3>
 {note_html}
 <table cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; font-family:-apple-system,system-ui,sans-serif;">
   <thead>
@@ -100,7 +105,7 @@ def send_digest(
 
     zero_html = ""
     if zero:
-        zero_tickers = ", ".join(html.escape(c["ticker"]) for c in zero)
+        zero_tickers = ", ".join(_h(c["ticker"]) for c in zero)
         zero_html = f"""
 <h3 style="margin:18px 0 4px 0;">Quiet (0 postings in last 7 days)</h3>
 <p style="color:#888; font-size:13px;">{zero_tickers}</p>"""
@@ -113,7 +118,7 @@ def send_digest(
   Total postings (7d): <strong>{total_postings}</strong> ·
   New since last run: <strong>{total_new}</strong> ·
   Massive-hiring threshold: ≥{threshold} postings/company in 7 days
-  <br/>Run started (UTC): {html.escape(run_started_at)}
+  <br/>Run started (UTC): {_h(run_started_at)}
 </p>
 
 {_section(f"Massive hiring (≥{threshold} postings in last 7 days)", massive_hiring, "Highlighted — potential expansion or strategic build-out signal.")}
