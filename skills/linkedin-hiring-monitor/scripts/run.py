@@ -35,7 +35,7 @@ sys.path.insert(0, str(HERE))
 from fetch_linkedin import fetch_all  # noqa: E402
 from notify import send_digest  # noqa: E402
 
-ALERT_THRESHOLD_JOBS = 10  # per user spec: "massive hiring"
+ALERT_THRESHOLD_JOBS = 20  # per user spec: "massive / unusual hiring"
 LOOKBACK_DAYS = 7  # per user spec: postings max 7 days old
 MAX_SAMPLE_TITLES = 5
 

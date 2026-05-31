@@ -1,11 +1,11 @@
 ---
 name: linkedin-hiring-monitor
-description: Daily LinkedIn-jobs digest for a 29-company watchlist (semiconductors, mega-cap tech, automakers, renewables). Uses SerpAPI to query Google for linkedin.com/jobs/view URLs indexed in the last 7 days, dedup'd against a local seen-state, then emails a single Resend digest flagging companies with ≥10 postings in the 7-day window as "massive hiring" signals. Designed to run as a scheduled remote routine Mon–Fri at 06:45 UTC (≈09:45 Europe/Sofia in summer).
+description: Daily LinkedIn-jobs digest for a 29-company watchlist (semiconductors, mega-cap tech, automakers, renewables). Uses SerpAPI to query Google for linkedin.com/jobs/view URLs indexed in the last 7 days, dedup'd against a local seen-state, then emails a single Resend digest flagging companies with ≥20 postings in the 7-day window as "massive hiring" signals. Designed to run as a scheduled remote routine Mon–Fri at 06:45 UTC (≈09:45 Europe/Sofia in summer).
 ---
 
 # LinkedIn Hiring Monitor
 
-Tracks LinkedIn job postings across a fixed cross-sector watchlist as a leading indicator of company expansion, hiring sprees, or strategic build-outs. The signal is **count of distinct postings per company in the last 7 days**; companies at or above `ALERT_THRESHOLD_JOBS` (default 10) are highlighted in the daily digest.
+Tracks LinkedIn job postings across a fixed cross-sector watchlist as a leading indicator of company expansion, hiring sprees, or strategic build-outs. The signal is **count of distinct postings per company in the last 7 days**; companies at or above `ALERT_THRESHOLD_JOBS` (default 20) are highlighted in red in the daily digest as "unusual hiring".
 
 ## Why SerpAPI / Google, not LinkedIn directly
 

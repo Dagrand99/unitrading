@@ -24,7 +24,7 @@ def _h(v: Any) -> str:
     return html.escape("" if v is None else str(v))
 
 
-def _company_row_html(entry: dict[str, Any], max_titles: int = 5) -> str:
+def _company_row_html(entry: dict[str, Any], max_titles: int = 5, highlight: bool = False) -> str:
     titles = entry.get("sample_titles", [])[:max_titles]
     title_html = "".join(
         f'<li><a href="{_h(t["url"])}">{_h(t["title"] or "(untitled)")}</a></li>'
@@ -33,14 +33,27 @@ def _company_row_html(entry: dict[str, Any], max_titles: int = 5) -> str:
     extra = ""
     if entry["total_count"] > max_titles:
         extra = f'<li style="color:#888;">… +{entry["total_count"] - max_titles} more</li>'
+
+    # Unusual / massive hiring → red row.
+    if highlight:
+        row_bg = "background:#fff0f0;"
+        text_color = "color:#b00020;"
+        ticker_html = f'<strong style="{text_color}">{_h(entry["ticker"])}</strong> <span style="{text_color} font-size:11px;">●</span>'
+        count_html = f'<strong style="{text_color} font-size:16px;">{entry["total_count"]}</strong>'
+    else:
+        row_bg = ""
+        text_color = ""
+        ticker_html = f'<strong>{_h(entry["ticker"])}</strong>'
+        count_html = f'<strong>{entry["total_count"]}</strong>'
+
     return f"""
-<tr>
+<tr style="{row_bg}">
   <td valign="top" style="padding:8px 12px; border-bottom:1px solid #eee;">
-    <strong>{_h(entry['ticker'])}</strong> · {_h(entry['name'])}
+    {ticker_html} · {_h(entry['name'])}
     <br/><span style="color:#888; font-size:12px;">{_h(entry['sector'])} · {_h(entry['country'])}</span>
   </td>
   <td valign="top" style="padding:8px 12px; border-bottom:1px solid #eee; text-align:right; font-family:monospace; font-size:14px;">
-    <strong>{entry['total_count']}</strong><br/>
+    {count_html}<br/>
     <span style="color:#888; font-size:11px;">new: {entry['new_count']}</span>
   </td>
   <td valign="top" style="padding:8px 12px; border-bottom:1px solid #eee;">
@@ -49,10 +62,10 @@ def _company_row_html(entry: dict[str, Any], max_titles: int = 5) -> str:
 </tr>"""
 
 
-def _section(title: str, rows: list[dict[str, Any]], note: str = "") -> str:
+def _section(title: str, rows: list[dict[str, Any]], note: str = "", highlight: bool = False) -> str:
     if not rows:
         return ""
-    body = "".join(_company_row_html(r) for r in rows)
+    body = "".join(_company_row_html(r, highlight=highlight) for r in rows)
     note_html = f'<p style="color:#666; font-size:12px; margin:4px 0 8px 0;">{_h(note)}</p>' if note else ""
     return f"""
 <h3 style="margin:18px 0 4px 0;">{_h(title)}</h3>
@@ -121,7 +134,7 @@ def send_digest(
   <br/>Run started (UTC): {_h(run_started_at)}
 </p>
 
-{_section(f"Massive hiring (≥{threshold} postings in last 7 days)", massive_hiring, "Highlighted — potential expansion or strategic build-out signal.")}
+{_section(f"⚠ Unusual hiring (≥{threshold} postings in last 7 days)", massive_hiring, "Highlighted in red — potential expansion or strategic build-out signal.", highlight=True)}
 {_section("Moderate hiring (1–{} postings)".format(threshold - 1), moderate)}
 {zero_html}
 
