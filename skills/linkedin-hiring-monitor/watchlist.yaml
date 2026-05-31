@@ -1,0 +1,194 @@
+# LinkedIn hiring watchlist for linkedin-hiring-monitor.
+#
+# Each entry is queried via SerpAPI (Google search scoped to
+# linkedin.com/jobs/view URLs, past-week filter). A company crosses
+# the "massive hiring" threshold when the dedup'd job count in the
+# 7-day window meets or exceeds ALERT_THRESHOLD_JOBS in scripts/run.py.
+#
+# Fields:
+#   - ticker: yfinance symbol (used only for the email header / sorting)
+#   - name:   human-readable label
+#   - sector: IT | Auto | Energy
+#   - country: ISO-2
+#   - search_terms: list of exact-quoted queries tried in order.
+#     The first one that returns ≥1 hit wins; remaining terms are
+#     skipped to save SerpAPI quota. Put the most distinctive name
+#     first (avoid generic words that match unrelated companies).
+
+companies:
+  # ── IT / Semiconductors / Cloud ───────────────────────────────
+  - ticker: INTC
+    name: Intel
+    sector: IT
+    country: US
+    search_terms: ["Intel Corporation", "Intel Corp"]
+
+  - ticker: AMD
+    name: AMD
+    sector: IT
+    country: US
+    search_terms: ["Advanced Micro Devices"]
+
+  - ticker: ASML
+    name: ASML
+    sector: IT
+    country: NL
+    search_terms: ["ASML"]
+
+  - ticker: IBM
+    name: IBM
+    sector: IT
+    country: US
+    search_terms: ["IBM"]
+
+  - ticker: SNOW
+    name: Snowflake
+    sector: IT
+    country: US
+    search_terms: ["Snowflake Inc", "Snowflake Computing"]
+
+  - ticker: QCOM
+    name: Qualcomm
+    sector: IT
+    country: US
+    search_terms: ["Qualcomm"]
+
+  - ticker: BABA
+    name: Alibaba
+    sector: IT
+    country: CN
+    search_terms: ["Alibaba Group", "Alibaba Cloud"]
+
+  - ticker: CSCO
+    name: Cisco
+    sector: IT
+    country: US
+    search_terms: ["Cisco Systems"]
+
+  - ticker: GOOGL
+    name: Google
+    sector: IT
+    country: US
+    search_terms: ["Google LLC", "Google"]
+
+  - ticker: NVDA
+    name: Nvidia
+    sector: IT
+    country: US
+    search_terms: ["NVIDIA Corporation", "NVIDIA"]
+
+  - ticker: AMZN
+    name: Amazon
+    sector: IT
+    country: US
+    search_terms: ["Amazon", "Amazon Web Services"]
+
+  - ticker: AAPL
+    name: Apple
+    sector: IT
+    country: US
+    search_terms: ["Apple Inc", "Apple"]
+
+  - ticker: META
+    name: Meta
+    sector: IT
+    country: US
+    search_terms: ["Meta Platforms", "Meta"]
+
+  - ticker: MSFT
+    name: Microsoft
+    sector: IT
+    country: US
+    search_terms: ["Microsoft"]
+
+  - ticker: HPE
+    name: Hewlett Packard Enterprise
+    sector: IT
+    country: US
+    search_terms: ["Hewlett Packard Enterprise", "HPE"]
+
+  - ticker: DELL
+    name: Dell Technologies
+    sector: IT
+    country: US
+    search_terms: ["Dell Technologies", "Dell EMC"]
+
+  - ticker: MU
+    name: Micron Technology
+    sector: IT
+    country: US
+    search_terms: ["Micron Technology"]
+
+  # ── Auto ──────────────────────────────────────────────────────
+  - ticker: BMW.DE
+    name: BMW
+    sector: Auto
+    country: DE
+    search_terms: ["BMW Group", "BMW AG"]
+
+  - ticker: VOW3.DE
+    name: Volkswagen
+    sector: Auto
+    country: DE
+    search_terms: ["Volkswagen Group", "Volkswagen AG"]
+
+  - ticker: F
+    name: Ford
+    sector: Auto
+    country: US
+    search_terms: ["Ford Motor Company"]
+
+  - ticker: TSLA
+    name: Tesla
+    sector: Auto
+    country: US
+    search_terms: ["Tesla"]
+
+  - ticker: P911.DE
+    name: Porsche
+    sector: Auto
+    country: DE
+    search_terms: ["Porsche AG", "Dr. Ing. h.c. F. Porsche"]
+
+  # ── Energy / Renewables ───────────────────────────────────────
+  - ticker: NDX1.DE
+    name: Nordex Group
+    sector: Energy
+    country: DE
+    search_terms: ["Nordex Group", "Nordex SE"]
+
+  - ticker: VWS.CO
+    name: Vestas Wind Systems
+    sector: Energy
+    country: DK
+    search_terms: ["Vestas Wind Systems", "Vestas"]
+
+  - ticker: SCATC.OL
+    name: Scatec ASA
+    sector: Energy
+    country: NO
+    search_terms: ["Scatec ASA", "Scatec Solar"]
+
+  - ticker: NEL.OL
+    name: Nel ASA
+    sector: Energy
+    country: NO
+    search_terms: ["Nel ASA", "Nel Hydrogen"]
+
+  - ticker: MCPHY.PA
+    name: McPhy Energy
+    sector: Energy
+    country: FR
+    search_terms: ["McPhy Energy"]
+
+  - ticker: EDP.LS
+    name: EDP
+    sector: Energy
+    country: PT
+    search_terms: ["EDP - Energias de Portugal", "Energias de Portugal"]
+
+  - ticker: EDPR.LS
+    name: EDP Renováveis
+    sector: Energy
+    country: PT
+    search_terms: ["EDP Renováveis", "EDP Renewables"]
